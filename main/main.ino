@@ -2,7 +2,7 @@
 #include <ESPmDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-#include <WebServer.h>
+
 
 #include "src/config.h"
 #include "src/ota/Ota.h"
@@ -13,7 +13,7 @@
 
 
 WebServer server(80);
-
+unsigned long ultimoTempo = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -48,6 +48,7 @@ void setup() {
 
   
   server.on("/", handleRoot);
+  server.on("/log", handleLog);
   
   server.begin();
   
@@ -62,8 +63,12 @@ void setup() {
 void loop() {
   ArduinoOTA.handle(); // fica escutando a rede.
   server.handleClient();
-  printWeb("AOAOAOOA");
-  delay(500);
+  
+  if (millis() - ultimoTempo >= 500) {
+    ultimoTempo = millis();
+    printWeb("AOAOAOOA");
+    Serial.println("AOAOAOOA");
+  }
 
   
 }

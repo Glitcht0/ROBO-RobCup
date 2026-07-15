@@ -2,5 +2,5 @@
 
 String terminalBuffer = "";
 
-const char* ssid = "MinhaRede";
-const char* password = "12345678";
+const char* ssid = "Marcos";
+const char* password = "lucassilva2";
