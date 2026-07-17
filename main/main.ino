@@ -7,6 +7,7 @@
 #include "src/config.h"
 #include "src/ota/Ota.h"
 #include "src/webServer/webServer.h"
+#include "src/MotorControll/Motor.h"
 
 
 // [http://192.168.48.110/](http://192.168.48.110/)
@@ -14,10 +15,16 @@
 
 WebServer server(80);
 unsigned long ultimoTempo = 0;
+uint8_t etapa = 0;
+unsigned long ultimoTeste = 0;
+
+
+
 
 void setup() {
   Serial.begin(115200);
   Serial.println("Iniciando Robô...");
+  led("#103af8");
 
   // 1. Conecta no Wi-Fi
   WiFi.mode(WIFI_STA);
@@ -25,6 +32,8 @@ void setup() {
   WiFi.setSleep(false);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Serial.println("Conexão falhou! Reiniciando...");
+    led("#fc1212");
+    
     delay(5000);
     ESP.restart();
   }
@@ -56,19 +65,69 @@ void setup() {
   Serial.print("Endereço IP: ");
   Serial.println(WiFi.localIP());
 
+  // =========== Configuração dos pinos do motor ==========================
+  pinMode(MOTOR_LFw, OUTPUT);
+  pinMode(MOTOR_LFs, OUTPUT);
+
+  pinMode(MOTOR_LBw, OUTPUT);
+  pinMode(MOTOR_LBs, OUTPUT);
+
+  pinMode(MOTOR_RFw, OUTPUT);
+  pinMode(MOTOR_RFs, OUTPUT);
+
+  pinMode(MOTOR_RBw, OUTPUT);
+  pinMode(MOTOR_RBs, OUTPUT);
+
+  desligaTudo();
+
+  led("#00ff00");
+
+
+
   
 }
+
+
+
+
 
 // 192.168.48.110
 void loop() {
   ArduinoOTA.handle(); // fica escutando a rede.
   server.handleClient();
   
-  if (millis() - ultimoTempo >= 500) {
+  
+  /*if (millis() - ultimoTempo >= 500) {
     ultimoTempo = millis();
     printWeb("AOAOAOOA");
     Serial.println("AOAOAOOA");
-  }
+  }*/
+
+  /*if (millis() - ultimoTeste >= 2000) {
+      ultimoTeste = millis();
+
+      desligaTudo();
+
+      switch (etapa) {
+          case 0: led("#ff0000"); digitalWrite(MOTOR_LFw, HIGH); break;
+          case 1: led("#880000"); digitalWrite(MOTOR_LFs, HIGH); break;
+          case 2: led("#00ff00"); digitalWrite(MOTOR_LBw, HIGH); break;
+          case 3: led("#008800"); digitalWrite(MOTOR_LBs, HIGH); break;
+          case 4: led("#0000ff"); digitalWrite(MOTOR_RFw, HIGH); break;
+          case 5: led("#000088"); digitalWrite(MOTOR_RFs, HIGH); break;
+          case 6: led("#ffff00"); digitalWrite(MOTOR_RBw, HIGH); break;
+          case 7: led("#888800"); digitalWrite(MOTOR_RBs, HIGH); break;
+          default:
+              etapa = 0;
+              return;
+      }
+
+      etapa++;
+  }*/
+
+  motorloop();
+
+
 
   
 }

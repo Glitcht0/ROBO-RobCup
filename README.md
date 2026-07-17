@@ -7,3 +7,5 @@ Diametro Máximo: 18 cm
 Altura Máxima: 15 cm
 
 Regras: [https://robocup-ssl.github.io/ssl-rules/sslrules.html](https://robocup-ssl.github.io/ssl-rules/sslrules.html)
+
+Rodas omidirecionais caseiras: [https://www.youtube.com/watch?v=qEYSifzOH54](https://www.youtube.com/watch?v=qEYSifzOH54)
