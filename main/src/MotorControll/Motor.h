@@ -3,7 +3,7 @@
 #include <Arduino.h>
 const uint8_t PWM_TESTE = 100; // 0-255 (~24%)
 
-void motorloop();
+void motorloop(int velLF, int velLB, int velRF, int velRB);
 void motorFrente(uint8_t frente, uint8_t tras, uint8_t pwm);
 void motorTras(uint8_t frente, uint8_t tras, uint8_t pwm);
 void pararMotores();

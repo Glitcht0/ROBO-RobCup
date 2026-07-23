@@ -97,25 +97,10 @@ void giraranti() {
     led("#00ffff");
 }
 
-void motorloop(){
-    static uint8_t estado = 0;
-    static unsigned long tempo = 0;
-
-    if (millis() - tempo > 3000) {
-        tempo = millis();
-
-        pararMotores();
-
-        switch (estado) {
-            case 0: frente(); delay(200);   break;
-            case 1: tras(); delay(200);     break;
-            case 2: esquerda(); delay(200); break;
-            case 3: direita();  delay(200); break;
-            case 4: girarhorario(); delay(200); break;
-            case 5: giraranti(); delay(200); break;
-        }
-
-        estado = (estado + 1) % 6;
-    }
-
+void motorloop(int velLF, int velLB, int velRF, int velRB) {
+    // A sua função motor() já faz a mágica de separar positivo (frente) e negativo (trás)
+    motor(MOTOR_LFw, MOTOR_LFs, velLF);
+    motor(MOTOR_LBw, MOTOR_LBs, velLB);
+    motor(MOTOR_RFw, MOTOR_RFs, velRF);
+    motor(MOTOR_RBw, MOTOR_RBs, velRB);
 }

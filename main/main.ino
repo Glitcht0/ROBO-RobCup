@@ -8,7 +8,26 @@
 #include "src/ota/Ota.h"
 #include "src/webServer/webServer.h"
 #include "src/MotorControll/Motor.h"
+#include <WiFiUdp.h>
 
+// --- Configurações de Rede UDP ---
+WiFiUDP udp;
+const unsigned int portaUDP = 6871;
+
+// --- Estrutura de Dados (Exatamente igual ao PC) ---
+// O __attribute__((packed)) garante que o ESP32 não adicione bytes vazios na memória,
+// mantendo os exatos 21 bytes que o seu Windows envia.
+struct __attribute__((packed)) PacoteDados {
+  uint32_t id_mensagem;
+  float sliders[4];
+  bool powerAtivo;
+};
+
+PacoteDados pacote;
+
+// --- Controle de Segurança (Timeout) ---
+unsigned long ultimoPacoteTempo = 0;
+const unsigned long TIMEOUT_CONEXAO = 500; // Tempo máximo sem receber dados (500ms)
 
 // [http://192.168.48.110/](http://192.168.48.110/)
 
@@ -78,9 +97,15 @@ void setup() {
   pinMode(MOTOR_RBw, OUTPUT);
   pinMode(MOTOR_RBs, OUTPUT);
 
-  desligaTudo();
+  pararMotores();
 
-  led("#00ff00");
+  led("#aa00ff"); // ROXO: Conectado e em Standby
+
+  // Inicia o UDP na porta definida
+  udp.begin(portaUDP);
+  Serial.printf("Escutando pacotes da Calibração na porta %d...\n", portaUDP);
+  // Usando a concatenação de Strings do Arduino:
+  printWeb("Escutando pacotes da Calibração na porta " + String(portaUDP) + "...");
 
 
 
@@ -91,43 +116,50 @@ void setup() {
 
 
 
-// 192.168.48.110
+// 192.168.48.106
 void loop() {
-  ArduinoOTA.handle(); // fica escutando a rede.
-  server.handleClient();
+  ArduinoOTA.handle(); // Fica escutando a rede para atualizações
+  server.handleClient(); // Servidor Web
   
-  
-  /*if (millis() - ultimoTempo >= 500) {
-    ultimoTempo = millis();
-    printWeb("AOAOAOOA");
-    Serial.println("AOAOAOOA");
-  }*/
+  // 1. LER PACOTES UDP
+  int tamanhoPacote = udp.parsePacket();
+  if (tamanhoPacote == sizeof(PacoteDados)) {
+    // Se o pacote tem o tamanho exato de 21 bytes, lemos para a struct
+    udp.read((char*)&pacote, sizeof(PacoteDados));
+    ultimoPacoteTempo = millis(); // Reseta o cronômetro de segurança!
+  } else if (tamanhoPacote > 0) {
+    // Se chegou lixo ou um pacote de tamanho errado, esvazia o buffer
+    udp.flush(); 
+  }
 
-  /*if (millis() - ultimoTeste >= 2000) {
-      ultimoTeste = millis();
+  // 2. MÁQUINA DE ESTADOS E CORES (Segurança e Operação)
+  if (millis() - ultimoPacoteTempo > TIMEOUT_CONEXAO) {
+    // ---- ESTADO 1: DESCONECTADO / SINAL PERDIDO ----
+    // PC travou, Raylib fechou ou Wi-Fi falhou.
+    pararMotores(); // CORRIGIDO: Usa a função certa para zerar o PWM
+    led("#ff9900"); // LARANJA: Aguardando conexão do PC
 
-      desligaTudo();
+  } else {
+    // ---- ESTADO 2: CONECTADO ----
+    if (pacote.powerAtivo == false) {
+      // STANDBY: O Raylib está enviando pacotes, mas o botão "LIGADO/DESLIGADO" está desligado
+      pararMotores(); // CORRIGIDO: Usa a função certa para zerar o PWM
+      led("#aa00ff"); // ROXO: Conectado e em Standby (Pronto para a ação)
+      
+    } else {
+      // OPERAÇÃO: Conectado e o botão do Raylib está LIGADO
+      led("#00ff00"); // VERDE: Ativo! Motores operando.
 
-      switch (etapa) {
-          case 0: led("#ff0000"); digitalWrite(MOTOR_LFw, HIGH); break;
-          case 1: led("#880000"); digitalWrite(MOTOR_LFs, HIGH); break;
-          case 2: led("#00ff00"); digitalWrite(MOTOR_LBw, HIGH); break;
-          case 3: led("#008800"); digitalWrite(MOTOR_LBs, HIGH); break;
-          case 4: led("#0000ff"); digitalWrite(MOTOR_RFw, HIGH); break;
-          case 5: led("#000088"); digitalWrite(MOTOR_RFs, HIGH); break;
-          case 6: led("#ffff00"); digitalWrite(MOTOR_RBw, HIGH); break;
-          case 7: led("#888800"); digitalWrite(MOTOR_RBs, HIGH); break;
-          default:
-              etapa = 0;
-              return;
-      }
+      // --- LÓGICA DOS MOTORES ---
+      // Nomeando as variáveis de acordo com os seus sliders do PC para evitar confusão
+      int velFrontL = (int)pacote.sliders[0];
+      int velFrontR = (int)pacote.sliders[1];
+      int velBackL  = (int)pacote.sliders[2];
+      int velBackR  = (int)pacote.sliders[3];
 
-      etapa++;
-  }*/
-
-  motorloop();
-
-
-
-  
+      // CORRIGIDO: Passando os valores na ordem exata que a motorloop() pede:
+      // (Frente-Esq, Trás-Esq, Frente-Dir, Trás-Dir)
+      motorloop(velFrontL, velBackL, velFrontR, velBackR);
+    }
+  }
 }

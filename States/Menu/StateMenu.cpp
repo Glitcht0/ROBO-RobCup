@@ -1,27 +1,28 @@
-#include "RoboCup.h"
+#include "StateMenu.h"
+#include "Projects/RoboCup/States/Calibration/StateCalibration.h"
 
-StateCalibration::StateCalibration()
+StateMenu::StateMenu()
 {
 }
 
-StateCalibration::~StateCalibration()
+StateMenu::~StateMenu()
 {
 }
 
-void StateCalibration::onEnter()
+void StateMenu::onEnter()
 {
 }
 
-void StateCalibration::onExit()
+void StateMenu::onExit()
 {
 }
 
-void StateCalibration::update()
+void StateMenu::update()
 {
     
 }
 
-void StateCalibration::draw()
+void StateMenu::draw()
 {
     BeginDrawing();
     ClearBackground(BLACK);
@@ -39,11 +40,11 @@ void StateCalibration::draw()
 
     float y0 = 300 * s;
     float dy = 40 * s;
-    if (GuiButton({ x, y0 + 1*dy, btnW, btnH }, T("Menu2"))) {
-        ChangeState(new StateMenu());
+    if (GuiButton({ x, y0 + 1*dy, btnW, btnH }, T("Menu4"))) {
+        ChangeState(new StateCalibration());
     }
     if (GuiButton({ x, y0 + 2*dy, btnW, btnH }, T("Menu3"))) {
-        ChangeState(new StateMenu());
+        ChangeState(new StateCalibration());
     }
 
     
