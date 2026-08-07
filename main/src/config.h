@@ -26,4 +26,7 @@ extern String terminalBuffer;
 void led(const char* hex);
 void desligaTudo();
 
+
+
+
 #endif

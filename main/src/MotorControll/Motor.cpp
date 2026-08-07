@@ -97,10 +97,20 @@ void giraranti() {
     led("#00ffff");
 }
 
-void motorloop(int velLF, int velLB, int velRF, int velRB) {
-    // A sua função motor() já faz a mágica de separar positivo (frente) e negativo (trás)
+
+/**
+ * @brief 🛵 Aplica a velocidade em cada um dos quatro motores.
+ *
+ * Valores positivos fazem o motor girar para frente e valores negativos
+ * fazem o motor girar para trás.
+ *
+ * Intervalo permitido para todos os parâmetros: -255 a 255.
+ */
+void aplicarVelocidadeMotores(int velLF, int velLB, int velRF, int velRB) {
     motor(MOTOR_LFw, MOTOR_LFs, velLF);
     motor(MOTOR_LBw, MOTOR_LBs, velLB);
     motor(MOTOR_RFw, MOTOR_RFs, velRF);
     motor(MOTOR_RBw, MOTOR_RBs, velRB);
 }
+
+
