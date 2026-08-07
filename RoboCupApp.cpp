@@ -30,6 +30,20 @@ int main(){
     
     InitWindow(LARGURA_TELA, ALTURA_TELA, "Raylib 3D - RoboCup");
     SetExitKey(KEY_NULL);
+    
+
+    // Carrega o arquivo para a memória primeiro
+    char *mappings = LoadFileText("Engine/resources/config/gamecontrollerdb.txt");
+    
+    // Carregamento de controle
+    if (mappings != NULL) {
+        SetGamepadMappings(mappings);
+        UnloadFileText(mappings); // Libera a memória após aplicar
+        TraceLog(LOG_INFO, "SUCESSO: Mapeamento de controle carregado!");
+    } else {
+        TraceLog(LOG_ERROR, "FALHA: gamecontrollerdb.txt nao encontrado!");
+    }
+
 
     SetTargetFPS(60);
     GuiLoadStyleAmber();

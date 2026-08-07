@@ -4,7 +4,7 @@
 #include "libs/asio.hpp"
 #include <raylib.h>
 #include "libs/raygui.h"
-
+#include <vector>
 
 
 
@@ -12,14 +12,8 @@
 #include "Engine/Core/State.h"
 #include <string> 
 #include <cstdint>
+#include "Projects/RoboCup/src/Utils/PacoteDados.h"
 
-#pragma pack(push, 1)
-struct PacoteDados {
-    uint32_t id_mensagem;    
-    float sliders[4];        
-    bool powerAtivo;         
-};
-#pragma pack(pop)
 
 class StateCalibration : public State {
 public:
@@ -46,7 +40,7 @@ private:
     // --- VARIÁVEIS DO ASIO ---
     asio::io_context m_io_context;         // O "motor" principal do Asio
     asio::ip::udp::socket m_socket;        // O nosso socket UDP
-    asio::ip::udp::endpoint m_endpoint;    // O destino (Endereço e Porta)
+    std::vector<asio::ip::udp::endpoint> m_endpoints;  // O destino (Endereço e Porta)
     
     PacoteDados pacote;
 };

@@ -11,17 +11,23 @@ StateCalibration::~StateCalibration(){
 
 void StateCalibration::onEnter(){
     try {
-        // 1. Abre o socket para IPv4
         m_socket.open(asio::ip::udp::v4());
-        
-        // 2. Habilita a permissão de broadcast
         m_socket.set_option(asio::socket_base::broadcast(true));
         
-        // 3. Define para onde vamos gritar: (Broadcast em todos os IPs locais, porta 6871)
-        m_endpoint = asio::ip::udp::endpoint(asio::ip::address_v4::broadcast(), 6871);
+        // 3. Cadastra todas as rotas possíveis de broadcast na porta 6871
+        m_endpoints.clear();
+        
+        // Tenta o Broadcast Global (255.255.255.255 - Rota padrão do Linux)
+        m_endpoints.push_back(asio::ip::udp::endpoint(asio::ip::address_v4::broadcast(), 6871));
+        
+        // Força o Broadcast no Wi-Fi (Hotspot)
+        m_endpoints.push_back(asio::ip::udp::endpoint(asio::ip::make_address("10.42.0.255"), 6871));
+        
+        // Força o Broadcast na Ethernet (Cabo de rede)
+        m_endpoints.push_back(asio::ip::udp::endpoint(asio::ip::make_address("10.10.31.255"), 6871));
 
         pacote.id_mensagem = 0;
-        std::cout << "Servidor Asio UDP Broadcast iniciado na porta 6871..." << std::endl;
+        std::cout << "Servidor Asio UDP Broadcast iniciado na porta 6871 (Multi-Interface)..." << std::endl;
         
     } catch (std::exception& e) {
         std::cerr << "Erro ao iniciar socket Asio: " << e.what() << std::endl;
@@ -52,7 +58,9 @@ void StateCalibration::update(){
 
     try {
         // Envia o pacote convertido para buffer no endpoint configurado
-        m_socket.send_to(asio::buffer(&pacote, sizeof(PacoteDados)), m_endpoint);
+        for (const auto& endpoint : m_endpoints) {
+            m_socket.send_to(asio::buffer(&pacote, sizeof(PacoteDados)), endpoint);
+        }
     } catch (std::exception& e) {
         std::cerr << "Erro ao enviar pacote: " << e.what() << std::endl;
     }
